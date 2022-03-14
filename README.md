@@ -1,5 +1,5 @@
 <h1 align="center">
-UFS Weather Model Repository Develop Branch Revisions Populated Dataset Tiemstamps
+UFS Weather Model Repository Develop Branch's Tracker for Populated Timestamped Datasets
 </h1>
 
 <p align="center">
