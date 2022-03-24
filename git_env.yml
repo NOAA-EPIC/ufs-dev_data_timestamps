@@ -1,4 +1,4 @@
-name: git_env
+name: data_tracker_env
 channels:
   - defaults
 dependencies:
