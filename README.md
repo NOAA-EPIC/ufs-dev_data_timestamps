@@ -52,7 +52,7 @@ Will be integrated with another script, which will perform the 2 months window s
 * N/A
 
 # Quick Start
-* For demonstration purposes, refer to '.ipynb'
+* For demonstration purposes, refer to 'rt_revision_tracker_scripts_demo.ipynb'
 
 # Environment Setup:
 Install miniconda on your machine. Note: Miniconda is a smaller version of Anaconda that only includes conda along with a small set of necessary and useful packages. With Miniconda, you can install only what you need, without all the extra packages that Anaconda comes packaged with:
@@ -130,7 +130,7 @@ conda env export > [ENVIRONMENT FILENAME].yml
 # What's Included
 Within the download, you will find the following directories and files:
 * Demo:
-    > .ipynb
+    > rt_revision_tracker_scripts_demo.ipynb
 * Scripts:
     > .py
     > .py
@@ -139,6 +139,7 @@ Within the download, you will find the following directories and files:
     > git_env.yml
 
 # Documentation
+* Refer to rt_revision_tracker_scripts_demo.ipynb
 
 # References
 * N/A
