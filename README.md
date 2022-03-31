@@ -43,7 +43,7 @@ Will be integrated with another script, which will perform the 2 months window s
 * [Status](#Status)
 * [What's Included](#What's-Included)
 * [Documentation](#Documentation)
-* [References](#Creator(s))
+* [References](#Reference(s))
 
 # Prerequisites
 * Python 3.9
@@ -132,9 +132,9 @@ Within the download, you will find the following directories and files:
 * Demo:
     > rt_revision_tracker_scripts_demo.ipynb
 * Scripts:
-    > .py
-    > .py
-    > .py
+    > rt_revision_tracker.py
+    > rt_tracker_populate.py
+    > rt_tracker_reset.py
 * List of Dependencies: 
     > git_env.yml
 
