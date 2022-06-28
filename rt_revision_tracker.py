@@ -29,16 +29,16 @@ class rt_revision_tracker():
         # If folder does not exist, create folder
         if not os.path.exists(self.latest_results_root):
             os.makedirs(self.latest_results_root)
-            print(f"Created Latest Results Directory: {self.latest_results_root}")
+            print(f"\033[1mCreated Latest Results Directory: {self.latest_results_root}\033[0m")
         if not os.path.exists(self.history_results_dir):
             os.makedirs(self.history_results_dir)
-            print(f"Created Historical Results Directory: {self.history_results_dir}")
+            print(f"\033[1mCreated Historical Results Directory: {self.history_results_dir}\033[0m")
             
         # File of interest's source.
-        self.url = 'https://github.com/ufs-community/ufs-weather-model/blob/develop/tests/rt.sh'
+        #self.url = 'https://github.com/ufs-community/ufs-weather-model/blob/develop/tests/rt.sh'
         
         # File of interest's source.(For Testing Purposes)
-        #self.url = 'https://github.com/NOAA-EPIC/ufs-weather-model-1/blob/test-develop/tests/rt.sh'
+        self.url = 'https://github.com/NOAA-EPIC/ufs-weather-model-1/blob/test-develop/tests/rt.sh'
         
     def parser(self, fn, data_log_dict):
         """
@@ -60,11 +60,14 @@ class rt_revision_tracker():
                    "input_root_vars": "INPUTDATA_ROOT",
                    "input_ww3_vars": "INPUTDATA_ROOT_WW3",
                    "input_bmic_vars": "INPUTDATA_ROOT_BMIC"}
-
         inputdataroot_embedded = ["INPUTDATA_ROOT_WW3", "INPUTDATA_ROOT_BMIC"]
 
-        data_log = []
+        # Record date of retrieving updated file.
+        # Datetime object containing current date and time
+        now = datetime.now()
+        dt_str = str(now.strftime("%m-%d-%Y"))
 
+        data_log = []
         with open(fn, 'r') as f:
             data = f.readlines()
             for line in data:
@@ -72,8 +75,8 @@ class rt_revision_tracker():
                     bl_ts = re.findall(r'[0-9]{8}', line)
                     bl_var = list(set(re.findall(r'\bBL_DATE\b', line)))
                     data_log.append(bl_var + bl_ts)
-                    if bl_ts[0] not in data_log_dict[bl_var[0]]:
-                        data_log_dict[bl_var[0]].append(bl_ts[0])
+                    if bl_ts[0] not in data_log_dict[dt_str][bl_var[0]]:
+                        data_log_dict[dt_str][bl_var[0]].append(bl_ts[0])
                     else:
                         pass
 
@@ -81,8 +84,8 @@ class rt_revision_tracker():
                     input_root_ts = re.findall(r'[0-9]{8}', line)
                     input_root_var = list(set(re.findall(r'\bINPUTDATA_ROOT\b', line)))
                     data_log.append(input_root_var + input_root_ts)
-                    if input_root_ts[0] not in data_log_dict[input_root_var[0]]:
-                        data_log_dict[input_root_var[0]].append(input_root_ts[0])
+                    if input_root_ts[0] not in data_log_dict[dt_str][input_root_var[0]]:
+                        data_log_dict[dt_str][input_root_var[0]].append(input_root_ts[0])
                     else:
                         pass
 
@@ -90,8 +93,8 @@ class rt_revision_tracker():
                     ww3_input_ts = re.findall(r'[0-9]{8}', line)
                     ww3_input_var = list(set(re.findall(r'\bINPUTDATA_ROOT_WW3\b', line)))
                     data_log.append(ww3_input_var + ww3_input_ts)
-                    if ww3_input_ts[0] not in data_log_dict[ww3_input_var[0]]:
-                        data_log_dict[ww3_input_var[0]].append(ww3_input_ts[0])
+                    if ww3_input_ts[0] not in data_log_dict[dt_str][ww3_input_var[0]]:
+                        data_log_dict[dt_str][ww3_input_var[0]].append(ww3_input_ts[0])
                     else:
                         pass
 
@@ -99,18 +102,20 @@ class rt_revision_tracker():
                     bmic_input_ts = re.findall(r'[0-9]{8}', line)
                     bmic_input_var = list(set(re.findall(r'\bINPUTDATA_ROOT_BMIC\b', line)))
                     data_log.append(bmic_input_var + bmic_input_ts)
-                    if bmic_input_ts[0] not in data_log_dict[bmic_input_var[0]]:
-                        data_log_dict[bmic_input_var[0]].append(bmic_input_ts[0])
+                    if bmic_input_ts[0] not in data_log_dict[dt_str][bmic_input_var[0]]:
+                        data_log_dict[dt_str][bmic_input_var[0]].append(bmic_input_ts[0])
+
                     else:
                         pass
-
+                    
         # Save parsed results of retrieved file (.sh).         
         with open(fn, 'w') as f:
-            f.write(str(data_log_dict))
+            f.write(str(dict(data_log_dict)))
 
-        ## Save parsed results of retrieved file (.pk).
+        # Save parsed results of retrieved file (.pk).
+        # serialize lambdas and defaultdicts via dill.
         with open(fn + '.pk', 'wb') as pk_handle:
-            pickle.dump(data_log_dict, pk_handle, protocol=pickle.HIGHEST_PROTOCOL)
+            pickle.dump(dict(data_log_dict), pk_handle, protocol=pickle.HIGHEST_PROTOCOL)
         os.rename(fn + '.pk', self.latest_results_root + self.latest_results_fn + '.pk')   
 
         return data_log_dict
@@ -159,6 +164,23 @@ class rt_revision_tracker():
                   self.latest_results_root + self.latest_results_fn)
 
         return
+    
+    def retrieval_date(self):
+        """
+        Record the date at which check for update was exectuted.
+
+        Args:
+            None
+
+        Return: None
+        
+
+        """ 
+        
+        #
+        
+        return
+        
 
     def check_for_update(self, data_log_dict):
         """
@@ -171,13 +193,12 @@ class rt_revision_tracker():
         
 
         """ 
-        
         # Read retrieved file.
         data_bytes = urlopen(self.url, context=ssl.SSLContext()).read()
-        retrieved_results_fn = '{}_rt.sh'.format(datetime.now().strftime("%Y%d%m%H%M%S"))
+        retrieved_results_fn = '{}_rt.sh'.format(datetime.now().strftime("%m-%d-%Y"))
         with open(self.latest_results_root + retrieved_results_fn, 'w') as raw_bytes_file:
             raw_bytes_file.write(data_bytes.decode('utf-8'))
-        print('\nRetrieved file saved as latest rt.sh version.')
+        print('\033[94m\033[1m\nRetrieved file of interest (e.g. rt.sh) saved as latest rt.sh version...\033[0m')
             
         # Parse retrieved file.
         data_log_dict = self.parser(self.latest_results_root + retrieved_results_fn, data_log_dict)
@@ -185,32 +206,34 @@ class rt_revision_tracker():
 
             # Calculate hash of latest file -- if exist.
             hash_latest = self.sha1(self.latest_results_root + self.latest_results_fn)
-            print("Latest rt.sh file's hash:", hash_latest)
+            print("\033[1mLatest rt.sh file's hash:\033[0m", hash_latest)
             
         except:
             
             # Transfer parsed file from results root's folder to historical log folder.
             # & rename initial file as the latest file. 
             self.move_files(self.latest_results_root + retrieved_results_fn)
-            print('\nRetrieved file saved as initial rt.sh version.')
+            print('\033[1m\nRetrieved file saved as initial rt.sh version...\033[0m\n')
 
             return data_log_dict 
 
         # Calculate hash of retrieved file.
         hash_new = self.sha1(self.latest_results_root + retrieved_results_fn)
-        print("Retrieved file's hash:", hash_new)
+        print("\033[1mRetrieved file's hash:\033[0m", hash_new)
 
         # Save retrieved file to historical log folder only if commited revisions/updates were made.
         if hash_latest != hash_new:
-            print('Updates were made to data timestamps within file since last retrieved file.')
+            
+            # Save updated file as the new latest_rt.sh file.
+            print('\033[1m\033[92mUpdates were made to data timestamps within file since last retrieved file.\033[0m')
             self.move_files(self.latest_results_root + retrieved_results_fn)
             
-            # [Optional] Could add a email notification feature here.
+            # [Optional] Could add a email notification feature here. => Feature was added to environment in Jenkin's
             
         else:
 
             # Removes retrieved file from results root's folder since no updates were made.
-            print('No updates were made to data timestamps within file since last retrieved file.')
+            print('\033[1m\033[91mNo updates were made to data timestamps within file since last retrieved file.\033[0m')
             os.remove(self.latest_results_root + retrieved_results_fn)
 
         return data_log_dict
@@ -232,9 +255,8 @@ class rt_revision_tracker():
         
 
         """
-        data_log_dict = self.check_for_update(defaultdict(list))
-
-        print(f'\nInitial Timestamps at Restart:\n{data_log_dict}')
+        data_log_dict = self.check_for_update(defaultdict(lambda: defaultdict(list)))
+        print('\033[94m' + '\033[1m' + f'\nInitial Timestamps at Restart:\033[0m\033[1m\n{data_log_dict}\033[0m')
 
         return
 
@@ -254,8 +276,8 @@ class rt_revision_tracker():
         # Recall latest updated file & populate w/ retrieved file if it has a timestamp revision.
         with open(f"{self.latest_results_root}{self.latest_results_fn}.pk", 'rb') as handle:
             data_log_dict = pickle.load(handle)
-        print('\nTimestamps (Prior to File Retrieval):\n', data_log_dict)    
-        data_log_dict = self.check_for_update(data_log_dict)  
-        print(f'\nPopulated Timestamps (After a New GitHub Push Was Made):\n{data_log_dict}')
+        print('\033[94m' + '\033[1m' + f'\nTimestamps (Prior to File Retrieval):\033[0m\033[1m\n{data_log_dict}\033[0m')    
+        data_log_dict = self.check_for_update(defaultdict(list, data_log_dict))  
+        print('\033[94m' + '\033[1m' + f'\nPopulated Timestamps (After Latest Newly Committed PR is Pushed to GitHub Repository of Interest):\033[0m\033[1m\n{defaultdict(list, data_log_dict)}\033[0m')
 
         return
