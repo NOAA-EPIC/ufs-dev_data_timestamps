@@ -35,10 +35,10 @@ class rt_revision_tracker():
             print(f"\033[1mCreated Historical Results Directory: {self.history_results_dir}\033[0m")
             
         # File of interest's source.
-        #self.url = 'https://github.com/ufs-community/ufs-weather-model/blob/develop/tests/rt.sh'
+        self.url = 'https://github.com/ufs-community/ufs-weather-model/blob/develop/tests/rt.sh'
         
         # File of interest's source.(For Testing Purposes)
-        self.url = 'https://github.com/NOAA-EPIC/ufs-weather-model-1/blob/test-develop/tests/rt.sh'
+        #self.url = 'https://github.com/NOAA-EPIC/ufs-weather-model-1/blob/test-develop/tests/rt.sh'
         
     def parser(self, fn, data_log_dict):
         """
