@@ -35,10 +35,10 @@ class rt_revision_tracker():
             print(f"\033[1mCreated Historical Results Directory: {self.history_results_dir}\033[0m")
             
         # File of interest's source.
-        self.url = 'https://github.com/ufs-community/ufs-weather-model/blob/develop/tests/rt.sh'
+        #self.url = 'https://github.com/ufs-community/ufs-weather-model/blob/develop/tests/rt.sh'
         
         # File of interest's source.(For Testing Purposes)
-        #self.url = 'https://github.com/NOAA-EPIC/ufs-weather-model-1/blob/test-develop/tests/rt.sh'
+        self.url = 'https://github.com/NOAA-EPIC/ufs-weather-model-1/blob/test-develop/tests/rt.sh'
         
     def parser(self, fn, data_log_dict):
         """
@@ -55,6 +55,7 @@ class rt_revision_tracker():
         
         
         """
+
         # Relevant variable names for which are setting the timestamps.
         ts_vars = {"bl_vars": "BL_DATE",
                    "input_root_vars": "INPUTDATA_ROOT",
@@ -64,16 +65,24 @@ class rt_revision_tracker():
 
         # Record date of retrieving updated file.
         # Datetime object containing current date and time
-        now = datetime.now()
-        dt_str = str(now.strftime("%m-%d-%Y"))
-
+        retrieval_dt = datetime.now() 
+        dt_str = str(retrieval_dt.strftime("%m-%d-%Y"))
+        
+        # Create key for new date if does not exist in dictionary.
+        if dt_str not in data_log_dict:
+            data_log_dict[dt_str] = {ts_vars["bl_vars"]: [],
+                                     ts_vars["input_root_vars"]: [],
+                                     ts_vars["input_ww3_vars"]: [],
+                                     ts_vars["input_bmic_vars"]: []}
+            
+        # Confirm the variables setting timestamps.
         data_log = []
         with open(fn, 'r') as f:
             data = f.readlines()
             for line in data:
                 if ts_vars["bl_vars"] in line and re.findall(r'[0-9]{8}', line):
-                    bl_ts = re.findall(r'[0-9]{8}', line)
                     bl_var = list(set(re.findall(r'\bBL_DATE\b', line)))
+                    bl_ts = re.findall(r'[0-9]{8}', line)
                     data_log.append(bl_var + bl_ts)
                     if bl_ts[0] not in data_log_dict[dt_str][bl_var[0]]:
                         data_log_dict[dt_str][bl_var[0]].append(bl_ts[0])
@@ -81,8 +90,8 @@ class rt_revision_tracker():
                         pass
 
                 if ts_vars["input_root_vars"] in line and all(x not in line for x in inputdataroot_embedded) and re.findall(r'[0-9]{8}', line):
-                    input_root_ts = re.findall(r'[0-9]{8}', line)
                     input_root_var = list(set(re.findall(r'\bINPUTDATA_ROOT\b', line)))
+                    input_root_ts = re.findall(r'[0-9]{8}', line)
                     data_log.append(input_root_var + input_root_ts)
                     if input_root_ts[0] not in data_log_dict[dt_str][input_root_var[0]]:
                         data_log_dict[dt_str][input_root_var[0]].append(input_root_ts[0])
@@ -90,8 +99,8 @@ class rt_revision_tracker():
                         pass
 
                 if ts_vars["input_ww3_vars"] in line and re.findall(r'[0-9]{8}', line):
-                    ww3_input_ts = re.findall(r'[0-9]{8}', line)
                     ww3_input_var = list(set(re.findall(r'\bINPUTDATA_ROOT_WW3\b', line)))
+                    ww3_input_ts = re.findall(r'[0-9]{8}', line)
                     data_log.append(ww3_input_var + ww3_input_ts)
                     if ww3_input_ts[0] not in data_log_dict[dt_str][ww3_input_var[0]]:
                         data_log_dict[dt_str][ww3_input_var[0]].append(ww3_input_ts[0])
@@ -99,8 +108,8 @@ class rt_revision_tracker():
                         pass
 
                 if ts_vars["input_bmic_vars"] in line and re.findall(r'[0-9]{8}', line):
-                    bmic_input_ts = re.findall(r'[0-9]{8}', line)
                     bmic_input_var = list(set(re.findall(r'\bINPUTDATA_ROOT_BMIC\b', line)))
+                    bmic_input_ts = re.findall(r'[0-9]{8}', line)
                     data_log.append(bmic_input_var + bmic_input_ts)
                     if bmic_input_ts[0] not in data_log_dict[dt_str][bmic_input_var[0]]:
                         data_log_dict[dt_str][bmic_input_var[0]].append(bmic_input_ts[0])
@@ -275,9 +284,10 @@ class rt_revision_tracker():
         
         # Recall latest updated file & populate w/ retrieved file if it has a timestamp revision.
         with open(f"{self.latest_results_root}{self.latest_results_fn}.pk", 'rb') as handle:
-            data_log_dict = pickle.load(handle)
+            data_log_dict = pickle.load(handle)                
         print('\033[94m' + '\033[1m' + f'\nTimestamps (Prior to File Retrieval):\033[0m\033[1m\n{data_log_dict}\033[0m')    
-        data_log_dict = self.check_for_update(defaultdict(list, data_log_dict))  
-        print('\033[94m' + '\033[1m' + f'\nPopulated Timestamps (After Latest Newly Committed PR is Pushed to GitHub Repository of Interest):\033[0m\033[1m\n{defaultdict(list, data_log_dict)}\033[0m')
 
-        return
+        data_log_dict = self.check_for_update(data_log_dict)  
+        print('\033[94m' + '\033[1m' + f'\nPopulated Timestamps (After Latest Newly Committed PR is Pushed to GitHub Repository of Interest):\033[0m\033[1m\n{data_log_dict}\033[0m')
+
+        return data_log_dict 
