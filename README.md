@@ -3,7 +3,7 @@ UFS Weather Model Repository Develop Branch's Tracker for Populated Timestamped 
 </h1>
 
 <p align="center">
-    <img src="images/header.png" width="750" height="170">
+    <img src="images/header.png" width="1000" height="200">
 </p>
 
 <h5 align="center">
