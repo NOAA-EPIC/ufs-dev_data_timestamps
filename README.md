@@ -54,7 +54,7 @@ Will be integrated with another script, which will perform the 2 months window s
 # Quick Start
 * For demonstration purposes, refer to 'rt_revision_tracker_scripts_demo.ipynb'
 
-# Environment Setup:
+# Environment Setup
 
 * Install miniconda on your machine. Note: Miniconda is a smaller version of Anaconda that only includes conda along with a small set of necessary and useful packages. With Miniconda, you can install only what you need, without all the extra packages that Anaconda comes packaged with:
 Download latest Miniconda (e.g. 3.9 version):
@@ -77,9 +77,7 @@ Reference SHA256 hash in following link: https://docs.conda.io/en/latest/minicon
 
 source ~/.bashrc
 
-* Next, you will see the prefix (base) in front of your terminal/shell prompt. Indicating the conda's base environment is activated.
-
-* Once you have conda installed on your machine, perform the following to create a conda environment:
+* Next, you will see the prefix (base) in front of your terminal/shell prompt. Indicating the conda's base environment is activated. Once you have conda installed on your machine, perform the following to create a conda environment:
 
     * To create a new environment (if a YAML file is not provided)
 
@@ -99,7 +97,7 @@ source ~/.bashrc
 
 *Note: A .yml file is a text file that contains a list of dependencies, which channels a list for installing dependencies for the given conda environment. For the code to utilize the dependencies, you will need to be in the directory where the environment.yml file lives.
 
-### Activate the new environment via:
+## Activate the new environment via:
 
 conda activate [Name of your conda environment you wish to activate]
 
@@ -113,7 +111,7 @@ conda activate [Name of your conda environment you wish to activate]
     * To deactivate a conda environment:
         * conda deactivate
 
-### Link Home Directory to Dataset Location on RDHPCS Platform
+## Link Home Directory to Dataset Location on RDHPCS Platform
 
 * Unfortunately, there is no way to navigate to the "/work/" filesystem from within the Jupyter interface when working on the remote server, Orion. The best way to workaround is to create a symbolic link in your home folder that will take you to the /work/ filesystem. Run the following command from a linux terminal on Orion to create the link:
 
@@ -123,15 +121,15 @@ conda activate [Name of your conda environment you wish to activate]
 
 *Note: On Orion, user must sym link from their home directory to the main directory containing the datasets of interest.
 
-### Open & Run Data Analytics Tool on Jupyter Notebook
+## Open & Run Application on Jupyter Notebook
 
-* Open OnDemand has a built-in file explorer and file transfer application available directly from its dashboard via ...
+* Open OnDemand has a built-in file explorer and file transfer application available directly from its dashboard via:
 
-Login to https://orion-ood.hpc.msstate.edu/
+    * Login to https://orion-ood.hpc.msstate.edu/
 
 * In the Open OnDemand Interface, select Interactive Apps > Jupyter Notbook
 
-### Additonal Information
+## Additonal Information
 
 To create a .yml file, execute the following commands:
 
