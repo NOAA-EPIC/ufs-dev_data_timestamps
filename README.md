@@ -21,7 +21,7 @@ Currently, the NOAA development teams' code managers are maintaining their datas
 
 __Purpose:__
 
-The purpose of this script is to detect, track, and populate the revisions of the timestamp datasets made to the UFS-WM developemnt branch. The data tracker bot is integrated with Jenkins and will later be integrated with another script which will perform the 2 months window shift of datasets to maintain the NOAA development teams' code managers current practice stored and fulfill the stored data requirements.
+The purpose of this script is to detect, track, and populate the revisions of the timestamp datasets made to the UFS-WM development branch. It is part of the Data Tracker Bot in Jenkins and will later be integrated with another script which will perform the 2 months window shift of datasets to maintain the NOAA development teams' code managers current practice stored and fulfill the stored data requirements.
 
 __Capabilities:__
 
