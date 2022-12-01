@@ -173,23 +173,6 @@ class rt_revision_tracker():
                   self.latest_results_root + self.latest_results_fn)
 
         return
-    
-    def retrieval_date(self):
-        """
-        Record the date at which check for update was exectuted.
-
-        Args:
-            None
-
-        Return: None
-        
-
-        """ 
-        
-        #
-        
-        return
-        
 
     def check_for_update(self, data_log_dict):
         """
