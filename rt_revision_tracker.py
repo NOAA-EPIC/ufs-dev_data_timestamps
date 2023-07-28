@@ -80,6 +80,7 @@ class rt_revision_tracker():
         with open(fn, 'r') as f:
             data = f.readlines()
             for line in data:
+                ### TODO: Due to recent UFS-WM recofiguration of timestamp records, modify the logic for baseline data retrieval.
                 if ts_vars["bl_vars"] in line and re.findall(r'[0-9]{8}', line):
                     bl_var = list(set(re.findall(r'\bBL_DATE\b', line)))
                     bl_ts = re.findall(r'[0-9]{8}', line)
@@ -88,32 +89,36 @@ class rt_revision_tracker():
                         data_log_dict[dt_str][bl_var[0]].append(bl_ts[0])
                     else:
                         pass
+                ###
 
-                if ts_vars["input_root_vars"] in line and all(x not in line for x in inputdataroot_embedded) and re.findall(r'[0-9]{8}', line):
+                if ts_vars["input_root_vars"] in line and re.findall(r'[0-9]{8}', line):
                     input_root_var = list(set(re.findall(r'\bINPUTDATA_ROOT\b', line)))
-                    input_root_ts = re.findall(r'[0-9]{8}', line)
-                    data_log.append(input_root_var + input_root_ts)
-                    if input_root_ts[0] not in data_log_dict[dt_str][input_root_var[0]]:
-                        data_log_dict[dt_str][input_root_var[0]].append(input_root_ts[0])
+                    input_root_ts = re.findall(r'input-data-[0-9]{8}', line)
+                    input_ts_numerics = re.findall(r'\d+', str(input_root_ts))
+                    data_log.append(input_root_var + input_ts_numerics)
+                    if input_ts_numerics[0] not in data_log_dict[dt_str][input_root_var[0]]:
+                        data_log_dict[dt_str][input_root_var[0]].append(input_ts_numerics[0])
                     else:
                         pass
-
+                
                 if ts_vars["input_ww3_vars"] in line and re.findall(r'[0-9]{8}', line):
                     ww3_input_var = list(set(re.findall(r'\bINPUTDATA_ROOT_WW3\b', line)))
-                    ww3_input_ts = re.findall(r'[0-9]{8}', line)
-                    data_log.append(ww3_input_var + ww3_input_ts)
-                    if ww3_input_ts[0] not in data_log_dict[dt_str][ww3_input_var[0]]:
-                        data_log_dict[dt_str][ww3_input_var[0]].append(ww3_input_ts[0])
+                    ww3_input_ts = re.findall(r'input_data_[0-9]{8}', line)
+                    ww3_input_ts_numerics = re.findall(r'\d+', str(ww3_input_ts))
+                    data_log.append(ww3_input_var + ww3_input_ts_numerics)
+                    if ww3_input_ts_numerics[0] not in data_log_dict[dt_str][ww3_input_var[0]]:
+                        data_log_dict[dt_str][ww3_input_var[0]].append(ww3_input_ts_numerics[0])
                     else:
                         pass
-
+                
                 if ts_vars["input_bmic_vars"] in line and re.findall(r'[0-9]{8}', line):
                     bmic_input_var = list(set(re.findall(r'\bINPUTDATA_ROOT_BMIC\b', line)))
-                    bmic_input_ts = re.findall(r'[0-9]{8}', line)
-                    data_log.append(bmic_input_var + bmic_input_ts)
-                    if bmic_input_ts[0] not in data_log_dict[dt_str][bmic_input_var[0]]:
-                        data_log_dict[dt_str][bmic_input_var[0]].append(bmic_input_ts[0])
-
+                    bmic_input_ts = re.findall(r'IC-[0-9]{8}', line)
+                    bmic_input_ts_numerics = re.findall(r'\d+', str(bmic_input_ts))
+                    data_log.append(bmic_input_var + bmic_input_ts_numerics)
+                    if bmic_input_ts_numerics[0] not in data_log_dict[dt_str][bmic_input_var[0]]:
+                        data_log_dict[dt_str][bmic_input_var[0]].append(bmic_input_ts_numerics[0])
+                
                     else:
                         pass
                     
