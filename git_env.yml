@@ -132,4 +132,4 @@ dependencies:
     - werkzeug==2.0.3
     - wget==3.2
     - wrapt==1.13.3
-prefix: /home/schin/anaconda3/envs/git_env
+prefix: /home/schin/anaconda3/envs/data_tracker
