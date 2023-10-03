@@ -1,12 +1,16 @@
 import os
 import shutil
-from urllib.request import urlopen
+from urllib.request import urlopen # <------
 from datetime import datetime
 import hashlib
 from collections import defaultdict
 import re
 import pickle
 import ssl
+import pandas as pd
+import io
+import requests
+import json
 
 class rt_revision_tracker():
     
@@ -23,8 +27,9 @@ class rt_revision_tracker():
         # Directory of historical results.
         self.history_results_dir = f'{self.latest_results_root}historical_updates/'
         
-        # Filename of latest file's results.
+        # Filename of latest files' (rt.sh & bl_date.conf) results. # *************** CHANGED 8/8
         self.latest_results_fn = 'latest_rt.sh'
+        self.latest_bl_results_fn = 'latest_bl_date.conf' # ********************************************
         
         # If folder does not exist, create folder
         if not os.path.exists(self.latest_results_root):
@@ -36,11 +41,9 @@ class rt_revision_tracker():
             
         # File of interest's source.
         self.url = 'https://github.com/ufs-community/ufs-weather-model/blob/develop/tests/rt.sh'
+        self.url_bl = 'https://github.com/ufs-community/ufs-weather-model/blob/develop/tests/bl_date.conf'  
         
-        # File of interest's source.(For Testing Purposes)
-        #self.url = 'https://github.com/NOAA-EPIC/ufs-weather-model/blob/test-develop/tests/rt.sh'
-        
-    def parser(self, fn, data_log_dict):
+    def parser(self, fn, bl_fn, data_log_dict):
         """
         
         Parse & extract timestamps from the UFS weather model's development branch.
@@ -48,7 +51,8 @@ class rt_revision_tracker():
         Detects 8-digits & relevant variable names for which are setting the timestamps.
 
         Args:
-            fn (str): Directory to retrieved file.
+            fn (str): Directory to retrieved file comprised of the non-baseline data timestamp.
+            bl_fn (str): Directory to retrieved file comprised of the baseline data timestamp.
             data_log_dict (dict): Dictionary of the previous file.
 
         Return (dict): Updated dictionary comprised of new updates made to file. 
@@ -80,17 +84,6 @@ class rt_revision_tracker():
         with open(fn, 'r') as f:
             data = f.readlines()
             for line in data:
-                ### TODO: Due to recent UFS-WM recofiguration of timestamp records, modify the logic for baseline data retrieval.
-                if ts_vars["bl_vars"] in line and re.findall(r'[0-9]{8}', line):
-                    bl_var = list(set(re.findall(r'\bBL_DATE\b', line)))
-                    bl_ts = re.findall(r'[0-9]{8}', line)
-                    data_log.append(bl_var + bl_ts)
-                    if bl_ts[0] not in data_log_dict[dt_str][bl_var[0]]:
-                        data_log_dict[dt_str][bl_var[0]].append(bl_ts[0])
-                    else:
-                        pass
-                ###
-
                 if ts_vars["input_root_vars"] in line and re.findall(r'[0-9]{8}', line):
                     input_root_var = list(set(re.findall(r'\bINPUTDATA_ROOT\b', line)))
                     input_root_ts = re.findall(r'input-data-[0-9]{8}', line)
@@ -100,7 +93,7 @@ class rt_revision_tracker():
                         data_log_dict[dt_str][input_root_var[0]].append(input_ts_numerics[0])
                     else:
                         pass
-                
+
                 if ts_vars["input_ww3_vars"] in line and re.findall(r'[0-9]{8}', line):
                     ww3_input_var = list(set(re.findall(r'\bINPUTDATA_ROOT_WW3\b', line)))
                     ww3_input_ts = re.findall(r'input_data_[0-9]{8}', line)
@@ -110,7 +103,7 @@ class rt_revision_tracker():
                         data_log_dict[dt_str][ww3_input_var[0]].append(ww3_input_ts_numerics[0])
                     else:
                         pass
-                
+
                 if ts_vars["input_bmic_vars"] in line and re.findall(r'[0-9]{8}', line):
                     bmic_input_var = list(set(re.findall(r'\bINPUTDATA_ROOT_BMIC\b', line)))
                     bmic_input_ts = re.findall(r'IC-[0-9]{8}', line)
@@ -118,21 +111,36 @@ class rt_revision_tracker():
                     data_log.append(bmic_input_var + bmic_input_ts_numerics)
                     if bmic_input_ts_numerics[0] not in data_log_dict[dt_str][bmic_input_var[0]]:
                         data_log_dict[dt_str][bmic_input_var[0]].append(bmic_input_ts_numerics[0])
-                
+
                     else:
                         pass
                     
+        with open(bl_fn, 'r') as f2: ### ********************************* ADDED 07/28
+            data_bl = f2.readlines()
+            for line in data_bl:
+                if ts_vars["bl_vars"] in line and re.findall(r'[0-9]{8}', line):
+                    bl_var = list(set(re.findall(r'\bBL_DATE\b', line)))
+                    bl_ts = re.findall(r'[0-9]{8}', line)
+                    data_log.append(bl_var + bl_ts)
+                    if bl_ts[0] not in data_log_dict[dt_str][bl_var[0]]:
+                        data_log_dict[dt_str][bl_var[0]].append(bl_ts[0])
+                    else:
+                        pass
+                                        
         # Save parsed results of retrieved file (.sh).         
         with open(fn, 'w') as f:
             f.write(str(dict(data_log_dict)))
-
-        # Save parsed results of retrieved file (.pk).
-        # serialize lambdas and defaultdicts via dill.
+            
+        # Save parsed results of retrieved file (.conf) for baseline dataset  
+        with open(bl_fn, 'w') as f_bl:
+            f_bl.write(str(dict(data_log_dict)))
+            
+        # Save parsed results of retrieved file (.pk) serialize lambdas and defaultdicts via dill.
         with open(fn + '.pk', 'wb') as pk_handle:
             pickle.dump(dict(data_log_dict), pk_handle, protocol=pickle.HIGHEST_PROTOCOL)
         os.rename(fn + '.pk', self.latest_results_root + self.latest_results_fn + '.pk')   
 
-        return data_log_dict
+        return data_log_dict ### *******************************************
 
     def sha1(self, fn):
         """
@@ -179,7 +187,7 @@ class rt_revision_tracker():
 
         return
 
-    def check_for_update(self, data_log_dict):
+    def check_for_update(self, data_log_dict): # ******************** CHANGED ENTIRELY
         """
         Update the latest file if a revision was made since the last time of retrieval.
 
@@ -190,50 +198,95 @@ class rt_revision_tracker():
         
 
         """ 
-        # Read retrieved file.
-        data_bytes = urlopen(self.url, context=ssl.SSLContext()).read()
-        retrieved_results_fn = '{}_rt.sh'.format(datetime.now().strftime("%m-%d-%Y"))
+        # Read/write file comprised of non-baseline datasets to disk. # ******************************************** CHANGED 07/28
+        # INITIAL APPROACH
+#         data_bytes = urlopen(self.url, context=ssl.SSLContext()).read()
+#         retrieved_results_fn = '{}_rt.sh'.format(datetime.now().strftime("%m-%d-%Y"))        
+#         with open(self.latest_results_root + retrieved_results_fn, 'w') as raw_bytes_file:
+#             raw_bytes_file.write(data_bytes.decode('utf-8'))
+#             #print('##### *******', data_bytes.decode('utf-8'))
+#         print('\033[94m\033[1m\nRetrieved rt.sh saved as latest rt.sh version...\033[0m')
+
+        # Read/write file comprised of non-baseline datasets to disk. # ******************************************** CHANGED 07/28
+        data_bytes = requests.get(self.url).content
+        data_bytes = json.loads(data_bytes.decode('utf-8'))
+        retrieved_results_fn = '{}_rt.sh'.format(datetime.now().strftime("%m-%d-%Y"))        
         with open(self.latest_results_root + retrieved_results_fn, 'w') as raw_bytes_file:
-            raw_bytes_file.write(data_bytes.decode('utf-8'))
-        print('\033[94m\033[1m\nRetrieved file of interest (e.g. rt.sh) saved as latest rt.sh version...\033[0m')
+            raw_bytes_file.write(str(data_bytes['payload']['blob']))
+            #print('##### *******', data_bytes['payload']['blob'])
+        print('\033[94m\033[1m\nRetrieved rt.sh saved as latest rt.sh version...\033[0m')
+        
+        # Read/write file comprised of baseline dataset to disk.
+        data_bytes_bl = requests.get(self.url_bl).content
+        data_bytes_bl = json.loads(data_bytes_bl.decode('utf-8'))
+        retrieved_results_bl_fn= '{}_bl_date.conf'.format(datetime.now().strftime("%m-%d-%Y"))
+        with open(self.latest_results_root + retrieved_results_bl_fn, 'w') as raw_bytes_file_bl:
+            raw_bytes_file_bl.write(str(data_bytes_bl['payload']['blob']['rawLines']))
+            #print('##### *******', data_bytes_bl['payload']['blob']['rawLines'])
+        print('\033[94m\033[1m\nRetrieved bl_date.conf saved as latest bl_date.conf version...\033[0m')
             
-        # Parse retrieved file.
-        data_log_dict = self.parser(self.latest_results_root + retrieved_results_fn, data_log_dict)
+        # Parse retrieved file.************************************************ CHANGED 07/28
+        data_log_dict = self.parser(self.latest_results_root + retrieved_results_fn, self.latest_results_root + retrieved_results_bl_fn, data_log_dict)
+        
         try:
 
-            # Calculate hash of latest file -- if exist.
+            # Calculate hash of latest bl_date.conf & rt.sh files -- if still exist. # *************** CHANGED
+            hash_latest_bl = self.sha1(self.latest_results_root + self.latest_bl_results_fn)
             hash_latest = self.sha1(self.latest_results_root + self.latest_results_fn)
+            print("\033[1mLatest bl_date.conf file's hash:\033[0m", hash_latest_bl)
             print("\033[1mLatest rt.sh file's hash:\033[0m", hash_latest)
             
         except:
             
             # Transfer parsed file from results root's folder to historical log folder.
             # & rename initial file as the latest file. 
+            self.move_files(self.latest_results_root + retrieved_results_bl_fn)
+            print('\033[1m\nRetrieved file saved as initial bl_date.conf version...\033[0m\n')
+            
             self.move_files(self.latest_results_root + retrieved_results_fn)
             print('\033[1m\nRetrieved file saved as initial rt.sh version...\033[0m\n')
 
             return data_log_dict 
 
-        # Calculate hash of retrieved file.
-        hash_new = self.sha1(self.latest_results_root + retrieved_results_fn)
-        print("\033[1mRetrieved file's hash:\033[0m", hash_new)
+        # Calculate hash of bl_date.conf file.
+        hash_new_bl = self.sha1(self.latest_results_root + retrieved_results_bl_fn)
+        print("\033[1mRetrieved bl_date.conf file's hash:\033[0m", hash_new_bl)
 
-        # Save retrieved file to historical log folder only if commited revisions/updates were made.
-        if hash_latest != hash_new:
+        # Save retrieved bl_date.conf to historical log folder only if commited revisions/updates were made.
+        if hash_latest_bl != hash_new_bl:
             
-            # Save updated file as the new latest_rt.sh file.
-            print('\033[1m\033[92mUpdates were made to data timestamps within file since last retrieved file.\033[0m')
-            self.move_files(self.latest_results_root + retrieved_results_fn)
+            # Save updated file as the new latest_bl_date.conf file.
+            print('\033[1m\033[92mUpdates were made to baseline data timestamps within file since last retrieved file.\033[0m')
+            self.move_files(self.latest_results_root + retrieved_results_bl_fn)
             
-            # [Optional] Could add a email notification feature here. => Feature was added to environment in Jenkin's
+            # [Optional] Could add a email notification feature here. => Email feature was added to environment in Jenkins
             
         else:
 
             # Removes retrieved file from results root's folder since no updates were made.
-            print('\033[1m\033[91mNo updates were made to data timestamps within file since last retrieved file.\033[0m')
-            os.remove(self.latest_results_root + retrieved_results_fn)
+            print('\033[1m\033[91mNo updates were made to baseline data timestamps within file since last retrieved file.\033[0m')
+            os.remove(self.latest_results_root + retrieved_results_bl_fn)
 
-        return data_log_dict
+        # Calculate hash of rt.sh file.
+        hash_new = self.sha1(self.latest_results_root + retrieved_results_fn)
+        print("\033[1mRetrieved rt.sh file's hash:\033[0m", hash_new)
+        
+        # Save retrieved rt.sh file to historical log folder only if commited revisions/updates were made.
+        if hash_latest != hash_new:
+            
+            # Save updated file as the new latest_rt.sh file.
+            print('\033[1m\033[92mUpdates were made to non-baseline data timestamps within file since last retrieved file.\033[0m')
+            self.move_files(self.latest_results_root + retrieved_results_fn)
+            
+            # [Optional] Could add a email notification feature here. => Email feature was added to environment in Jenkins
+            
+        else:
+
+            # Removes retrieved file from results root's folder since no updates were made.
+            print('\033[1m\033[91mNo updates were made to non-baseline data timestamps within file since last retrieved file.\033[0m')
+            os.remove(self.latest_results_root + retrieved_results_fn)
+            
+        return data_log_dict # **********************************************************************
 
     def reset_tracker(self):
         """
