@@ -1,4 +1,4 @@
-name: data_tracker
+name: git_env
 channels:
   - defaults
 dependencies:
@@ -132,4 +132,4 @@ dependencies:
     - werkzeug==2.0.3
     - wget==3.2
     - wrapt==1.13.3
-prefix: /home/schin/anaconda3/envs/data_tracker
+prefix: /home/schin/anaconda3/envs/git_env
