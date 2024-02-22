@@ -9,7 +9,7 @@ UFS Weather Model Repository Develop Branch's Tracker for Populated Timestamped 
 <h5 align="center">
     
 [Prerequisites](#Prerequisites) • [Dataset](#Dataset) • [Quick Start](#Quick-Start)  • [Environment Setup](#Environment-Setup) • [Status](#Status)
- • [What's Included](#What's-Included) • [Documentation](#Documentation) • [References](#Reference(s))
+ • [What's Included](#What's-Included)
 
 </h5>
 
@@ -156,12 +156,6 @@ Within the download, you will find the following directories and files:
 * List of Dependencies: 
     > git_env.yml
 
-# Documentation
-* Refer to rt_revision_tracker_scripts_demo.ipynb
-
-# References
-* N/A
-
 # Version:
-* Draft as of 03/14/22
+* Draft as of 03/14/24
 
