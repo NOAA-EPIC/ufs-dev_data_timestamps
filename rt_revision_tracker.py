@@ -27,9 +27,10 @@ class rt_revision_tracker():
         # Directory of historical results.
         self.history_results_dir = f'{self.latest_results_root}historical_updates/'
         
-        # Filename of latest files' (rt.sh & bl_date.conf) results. # *************** CHANGED 8/8
+        # Filename of latest files' (rt.sh & bl_date.conf) results. 
+        # Change in locality of where data timestamps are recorded occurred ~ 08/2024
         self.latest_results_fn = 'latest_rt.sh'
-        self.latest_bl_results_fn = 'latest_bl_date.conf' # ********************************************
+        self.latest_bl_results_fn = 'latest_bl_date.conf'
         
         # If folder does not exist, create folder
         if not os.path.exists(self.latest_results_root):
@@ -114,8 +115,9 @@ class rt_revision_tracker():
 
                     else:
                         pass
-                    
-        with open(bl_fn, 'r') as f2: ### ********************************* ADDED 07/28
+                        
+        # Added due to change in locality of where data timestamps are recorded occurred ~ 08/2024            
+        with open(bl_fn, 'r') as f2:
             data_bl = f2.readlines()
             for line in data_bl:
                 if ts_vars["bl_vars"] in line and re.findall(r'[0-9]{8}', line):
@@ -140,7 +142,7 @@ class rt_revision_tracker():
             pickle.dump(dict(data_log_dict), pk_handle, protocol=pickle.HIGHEST_PROTOCOL)
         os.rename(fn + '.pk', self.latest_results_root + self.latest_results_fn + '.pk')   
 
-        return data_log_dict ### *******************************************
+        return data_log_dict
 
     def sha1(self, fn):
         """
@@ -187,7 +189,7 @@ class rt_revision_tracker():
 
         return
 
-    def check_for_update(self, data_log_dict): # ******************** CHANGED ENTIRELY
+    def check_for_update(self, data_log_dict):
         """
         Update the latest file if a revision was made since the last time of retrieval.
 
@@ -198,7 +200,9 @@ class rt_revision_tracker():
         
 
         """ 
-        # Read/write file comprised of non-baseline datasets to disk. # ******************************************** CHANGED 07/28
+        # Read/write file comprised of non-baseline datasets to disk.
+        # Change in locality of where data timestamps are recorded occurred ~ 08/2024
+        
         # INITIAL APPROACH
 #         data_bytes = urlopen(self.url, context=ssl.SSLContext()).read()
 #         retrieved_results_fn = '{}_rt.sh'.format(datetime.now().strftime("%m-%d-%Y"))        
@@ -207,30 +211,30 @@ class rt_revision_tracker():
 #             #print('##### *******', data_bytes.decode('utf-8'))
 #         print('\033[94m\033[1m\nRetrieved rt.sh saved as latest rt.sh version...\033[0m')
 
-        # Read/write file comprised of non-baseline datasets to disk. # ******************************************** CHANGED 07/28
+        # Read/write file comprised of non-baseline datasets to disk.
         data_bytes = requests.get(self.url).content
         data_bytes = json.loads(data_bytes.decode('utf-8'))
         retrieved_results_fn = '{}_rt.sh'.format(datetime.now().strftime("%m-%d-%Y"))        
         with open(self.latest_results_root + retrieved_results_fn, 'w') as raw_bytes_file:
             raw_bytes_file.write(str(data_bytes['payload']['blob']))
-            #print('##### *******', data_bytes['payload']['blob'])
         print('\033[94m\033[1m\nRetrieved rt.sh saved as latest rt.sh version...\033[0m')
         
         # Read/write file comprised of baseline dataset to disk.
+        # Change in locality of where data timestamps are recorded occurred ~ 08/2024
         data_bytes_bl = requests.get(self.url_bl).content
         data_bytes_bl = json.loads(data_bytes_bl.decode('utf-8'))
         retrieved_results_bl_fn= '{}_bl_date.conf'.format(datetime.now().strftime("%m-%d-%Y"))
         with open(self.latest_results_root + retrieved_results_bl_fn, 'w') as raw_bytes_file_bl:
             raw_bytes_file_bl.write(str(data_bytes_bl['payload']['blob']['rawLines']))
-            #print('##### *******', data_bytes_bl['payload']['blob']['rawLines'])
         print('\033[94m\033[1m\nRetrieved bl_date.conf saved as latest bl_date.conf version...\033[0m')
             
-        # Parse retrieved file.************************************************ CHANGED 07/28
+        # Parse retrieved file.
         data_log_dict = self.parser(self.latest_results_root + retrieved_results_fn, self.latest_results_root + retrieved_results_bl_fn, data_log_dict)
         
         try:
 
-            # Calculate hash of latest bl_date.conf & rt.sh files -- if still exist. # *************** CHANGED
+            # Calculate hash of latest bl_date.conf & rt.sh files -- if still exist.
+            # Change in locality of where data timestamps are recorded occurred ~ 08/2024
             hash_latest_bl = self.sha1(self.latest_results_root + self.latest_bl_results_fn)
             hash_latest = self.sha1(self.latest_results_root + self.latest_results_fn)
             print("\033[1mLatest bl_date.conf file's hash:\033[0m", hash_latest_bl)
@@ -286,7 +290,7 @@ class rt_revision_tracker():
             print('\033[1m\033[91mNo updates were made to non-baseline data timestamps within file since last retrieved file.\033[0m')
             os.remove(self.latest_results_root + retrieved_results_fn)
             
-        return data_log_dict # **********************************************************************
+        return data_log_dict
 
     def reset_tracker(self):
         """
