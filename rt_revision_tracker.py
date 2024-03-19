@@ -155,7 +155,6 @@ class rt_revision_tracker():
             fn (str): Directory of file to calculate its hash.
 
         Return (str): Retrieved file's calculated hash.
-        
 
         """
 
@@ -203,17 +202,7 @@ class rt_revision_tracker():
         
 
         """ 
-        # Read/write file comprised of non-baseline datasets to disk.
-        # Change in locality of where data timestamps are recorded occurred ~ 08/2024
         
-        # INITIAL APPROACH
-#         data_bytes = urlopen(self.url, context=ssl.SSLContext()).read()
-#         retrieved_results_fn = '{}_rt.sh'.format(datetime.now().strftime("%m-%d-%Y"))        
-#         with open(self.latest_results_root + retrieved_results_fn, 'w') as raw_bytes_file:
-#             raw_bytes_file.write(data_bytes.decode('utf-8'))
-#             #print('##### *******', data_bytes.decode('utf-8'))
-#         print('\033[94m\033[1m\nRetrieved rt.sh saved as latest rt.sh version...\033[0m')
-
         # Read/write file comprised of non-baseline datasets to disk.
         data_bytes = requests.get(self.url).content
         data_bytes = json.loads(data_bytes.decode('utf-8'))
@@ -223,7 +212,6 @@ class rt_revision_tracker():
         print('\033[94m\033[1m\nRetrieved rt.sh saved as latest rt.sh version...\033[0m')
         
         # Read/write file comprised of baseline dataset to disk.
-        # Change in locality of where data timestamps are recorded occurred ~ 08/2024
         data_bytes_bl = requests.get(self.url_bl).content
         data_bytes_bl = json.loads(data_bytes_bl.decode('utf-8'))
         retrieved_results_bl_fn= '{}_bl_date.conf'.format(datetime.now().strftime("%m-%d-%Y"))
@@ -236,8 +224,7 @@ class rt_revision_tracker():
         
         try:
 
-            # Calculate hash of latest bl_date.conf & rt.sh files -- if still exist.
-            # Change in locality of where data timestamps are recorded occurred ~ 08/2024
+            # Calculate hash of latest bl_date.conf & rt.sh files.
             hash_latest_bl = self.sha1(self.latest_results_root + self.latest_bl_results_fn)
             hash_latest = self.sha1(self.latest_results_root + self.latest_results_fn)
             print("\033[1mLatest bl_date.conf file's hash:\033[0m", hash_latest_bl)
