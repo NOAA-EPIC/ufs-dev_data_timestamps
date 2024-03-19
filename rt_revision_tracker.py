@@ -40,7 +40,10 @@ class rt_revision_tracker():
             os.makedirs(self.history_results_dir)
             print(f"\033[1mCreated Historical Results Directory: {self.history_results_dir}\033[0m")
             
-        # File of interest's source.
+        # Files featuring the datasets of interest. Note: The baseline dataset has been 
+        # isolated from where the input datasets are located by the UFS-WM developers. It
+        # was highly recommended to the CM team to not keep these datasets separated, but rather
+        # placed into a single file only mentioning the data directories.
         self.url = 'https://github.com/ufs-community/ufs-weather-model/blob/develop/tests/rt.sh'
         self.url_bl = 'https://github.com/ufs-community/ufs-weather-model/blob/develop/tests/bl_date.conf'  
         
