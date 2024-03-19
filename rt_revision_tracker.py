@@ -59,8 +59,7 @@ class rt_revision_tracker():
             bl_fn (str): Directory to retrieved file comprised of the baseline data timestamp.
             data_log_dict (dict): Dictionary of the previous file.
 
-        Return (dict): Updated dictionary comprised of new updates made to file. 
-        
+        Return (dict): Updated dictionary comprised of new updates made to file.     
         
         """
 
@@ -177,8 +176,7 @@ class rt_revision_tracker():
         Args: 
             retrieved_fn (str): Directory of retrieved file.
 
-        Return: None
-        
+        Return: None  
 
         """
         
@@ -199,7 +197,6 @@ class rt_revision_tracker():
             data_log_dict(dict): Dictionary of the previous file.
 
         Return (dict): Updated dictionary comprised of new updates made to file. 
-        
 
         """ 
         
@@ -297,7 +294,6 @@ class rt_revision_tracker():
         all file updates will be seen w/in the historical folder. Must initialize first for an initial
         file prior to populating newly updated files.
         
-
         """
         data_log_dict = self.check_for_update(defaultdict(lambda: defaultdict(list)))
         print('\033[94m' + '\033[1m' + f'\nInitial Timestamps at Restart:\033[0m\033[1m\n{data_log_dict}\033[0m')
