@@ -21,7 +21,7 @@ class rt_revision_tracker():
     
     def __init__(self):
         
-        # Results root foldername. 
+        # Root foldername of saved results. 
         self.latest_results_root =  './track_ts/'
         
         # Directory of historical results.
@@ -64,7 +64,7 @@ class rt_revision_tracker():
         
         """
 
-        # Relevant variable names for which are setting the timestamps.
+        # Relevant variable names for which features each dataset's timestamps.
         ts_vars = {"bl_vars": "BL_DATE",
                    "input_root_vars": "INPUTDATA_ROOT",
                    "input_ww3_vars": "INPUTDATA_ROOT_WW3",
@@ -83,7 +83,7 @@ class rt_revision_tracker():
                                      ts_vars["input_ww3_vars"]: [],
                                      ts_vars["input_bmic_vars"]: []}
             
-        # Confirm the variables setting timestamps.
+        # Confirm the variables featuring the timestamps.
         data_log = []
         with open(fn, 'r') as f:
             data = f.readlines()
@@ -119,7 +119,7 @@ class rt_revision_tracker():
                     else:
                         pass
                         
-        # Added due to change in locality of where data timestamps are recorded occurred ~ 08/2024            
+        # Due to change in locality of where data timestamps are recorded, incorporating new parsing for extracting baseline data details          
         with open(bl_fn, 'r') as f2:
             data_bl = f2.readlines()
             for line in data_bl:
