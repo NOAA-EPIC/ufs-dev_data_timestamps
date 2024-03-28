@@ -1,6 +1,6 @@
 import os
 import shutil
-from urllib.request import urlopen # <------
+from urllib.request import urlopen
 from datetime import datetime
 import hashlib
 from collections import defaultdict
@@ -45,7 +45,7 @@ class rt_revision_tracker():
         # was highly recommended to the CM team to not keep these datasets separated, but rather
         # placed into a single file only mentioning the data directories.
         self.url = 'https://github.com/ufs-community/ufs-weather-model/blob/develop/tests/rt.sh'
-        self.url_bl = 'https://github.com/ufs-community/ufs-weather-model/blob/develop/tests/bl_date.conf'  
+        self.url_bl = 'https://github.com/ufs-community/ufs-weather-model/raw/develop/tests/bl_date.conf'  
         
     def parser(self, fn, bl_fn, data_log_dict):
         """
@@ -199,21 +199,25 @@ class rt_revision_tracker():
         Return (dict): Updated dictionary comprised of new updates made to file. 
 
         """ 
-        
         # Read/write file comprised of non-baseline datasets to disk.
-        data_bytes = requests.get(self.url).content
-        data_bytes = json.loads(data_bytes.decode('utf-8'))
+        # Change in locality of where data timestamps are recorded occurred ~ 08/2024
+        data_bytes = requests.get(self.url).content.decode('utf-8')
+        data_bytes = json.dumps(data_bytes) 
+        data_bytes = json.loads(data_bytes)   
         retrieved_results_fn = '{}_rt.sh'.format(datetime.now().strftime("%m-%d-%Y"))        
         with open(self.latest_results_root + retrieved_results_fn, 'w') as raw_bytes_file:
-            raw_bytes_file.write(str(data_bytes['payload']['blob']))
+            raw_bytes_file.write(data_bytes)
+            #raw_bytes_file.write(str(data_bytes['payload']['blob']))
         print('\033[94m\033[1m\nRetrieved rt.sh saved as latest rt.sh version...\033[0m')
         
         # Read/write file comprised of baseline dataset to disk.
-        data_bytes_bl = requests.get(self.url_bl).content
-        data_bytes_bl = json.loads(data_bytes_bl.decode('utf-8'))
+        data_bytes_bl = requests.get(self.url_bl).content.decode('utf-8')
+        data_bytes_bl = json.dumps(data_bytes_bl)
+        data_bytes_bl = json.loads(data_bytes_bl)
         retrieved_results_bl_fn= '{}_bl_date.conf'.format(datetime.now().strftime("%m-%d-%Y"))
         with open(self.latest_results_root + retrieved_results_bl_fn, 'w') as raw_bytes_file_bl:
-            raw_bytes_file_bl.write(str(data_bytes_bl['payload']['blob']['rawLines']))
+            raw_bytes_file_bl.write(data_bytes_bl)
+            #raw_bytes_file_bl.write(str(data_bytes_bl['payload']['blob']['rawLines']))
         print('\033[94m\033[1m\nRetrieved bl_date.conf saved as latest bl_date.conf version...\033[0m')
             
         # Parse retrieved file.
